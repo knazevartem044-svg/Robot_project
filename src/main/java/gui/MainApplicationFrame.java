@@ -1,5 +1,6 @@
 package gui;
 
+import gui.state.StateManager;
 import log.Logger;
 
 import javax.swing.*;
@@ -7,6 +8,7 @@ import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.File;
 
 /**
  * Главное окно приложения
@@ -16,16 +18,20 @@ public class MainApplicationFrame extends JFrame
     private final JDesktopPane desktopPane = new JDesktopPane();
 
     /**
+     * Менеджер сохранения и восстановления состояния окон.
+     */
+    private StateManager stateManager;
+
+    /**
      * Создаёт и настраивает главное окно приложения
      */
-    public MainApplicationFrame() {
-        //Make the big window be indented 50 pixels from each edge
-        //of the screen.
+    public MainApplicationFrame()
+    {
         int inset = 50;
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         setBounds(inset, inset,
-                screenSize.width  - inset*2,
-                screenSize.height - inset*2);
+                screenSize.width - inset * 2,
+                screenSize.height - inset * 2);
 
         setContentPane(desktopPane);
 
@@ -33,15 +39,24 @@ public class MainApplicationFrame extends JFrame
         addWindow(logWindow);
 
         GameWindow gameWindow = new GameWindow();
-        gameWindow.setSize(400,  400);
         addWindow(gameWindow);
+
+        String homeDir = System.getProperty("user.home");
+        File stateFile = new File(new File(homeDir, "knyazev"), "state.cfg");
+
+        stateManager = new StateManager(stateFile);
+        stateManager.register("log", logWindow);
+        stateManager.register("model", gameWindow);
+        stateManager.loadAll();
 
         setJMenuBar(generateMenuBar());
 
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
-        addWindowListener(new WindowAdapter() {
+        addWindowListener(new WindowAdapter()
+        {
             @Override
-            public void windowClosing(WindowEvent e) {
+            public void windowClosing(WindowEvent e)
+            {
                 requestExit();
             }
         });
@@ -53,7 +68,7 @@ public class MainApplicationFrame extends JFrame
     protected LogWindow createLogWindow()
     {
         LogWindow logWindow = new LogWindow(Logger.getDefaultLogSource());
-        logWindow.setLocation(10,10);
+        logWindow.setLocation(10, 10);
         logWindow.setSize(300, 800);
         setMinimumSize(logWindow.getSize());
         logWindow.pack();
@@ -71,7 +86,7 @@ public class MainApplicationFrame extends JFrame
     }
 
     /**
-     * Создаёт строку меню и наполняет её основными разделами меню
+     * Создаёт строку меню приложения
      */
     private JMenuBar generateMenuBar()
     {
@@ -83,17 +98,18 @@ public class MainApplicationFrame extends JFrame
     }
 
     /**
-     * Формирует меню Файл и добавляет пункт Выход который инициирует закрытие окна
-     * через событие WINDOW_CLOSING
+     * Формирует меню Файл
      */
     private JMenu createFileMenu()
     {
         JMenu fileMenu = new JMenu("Файл");
         fileMenu.setMnemonic(KeyEvent.VK_F);
-        fileMenu.getAccessibleContext().setAccessibleDescription("Выход");
+        fileMenu.getAccessibleContext().setAccessibleDescription("Файл");
+
         JMenuItem exitItem = new JMenuItem("Выход", KeyEvent.VK_X);
-        exitItem.addActionListener((event) -> Toolkit.getDefaultToolkit().getSystemEventQueue()
-                .postEvent(new WindowEvent(this, WindowEvent.WINDOW_CLOSING)));
+        exitItem.addActionListener((event) ->
+                Toolkit.getDefaultToolkit().getSystemEventQueue().postEvent(
+                        new WindowEvent(this, WindowEvent.WINDOW_CLOSING)));
 
         fileMenu.add(exitItem);
         return fileMenu;
@@ -116,12 +132,12 @@ public class MainApplicationFrame extends JFrame
         });
         lookAndFeelMenu.add(systemLookAndFeel);
 
-        JMenuItem crossplatformLookAndFeel = new JMenuItem("Универсальная схема", KeyEvent.VK_U);
-        crossplatformLookAndFeel.addActionListener((event) -> {
+        JMenuItem crossPlatformLookAndFeel = new JMenuItem("Универсальная схема", KeyEvent.VK_U);
+        crossPlatformLookAndFeel.addActionListener((event) -> {
             setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
             this.invalidate();
         });
-        lookAndFeelMenu.add(crossplatformLookAndFeel);
+        lookAndFeelMenu.add(crossPlatformLookAndFeel);
 
         return lookAndFeelMenu;
     }
@@ -143,11 +159,11 @@ public class MainApplicationFrame extends JFrame
     }
 
     /**
-     * Запрашивает подтверждение выхода у пользователя и при согласии завершает приложение
+     * Запрашивает подтверждение выхода и сохраняет состояние окон.
      */
     private void requestExit()
     {
-        Object[] options = {"Да", "нет"};
+        Object[] options = {"Да", "Нет"};
 
         int choice = JOptionPane.showOptionDialog(
                 this,
@@ -157,13 +173,19 @@ public class MainApplicationFrame extends JFrame
                 JOptionPane.QUESTION_MESSAGE,
                 null,
                 options,
-                options
+                options[0]
         );
 
-        if (choice == JOptionPane.YES_OPTION) {
+        if (choice == JOptionPane.YES_OPTION)
+        {
+            stateManager.saveAll();
             System.exit(0);
         }
     }
+
+    /**
+     * Устанавливает внешний вид приложения.
+     */
     private void setLookAndFeel(String className)
     {
         try
@@ -174,7 +196,6 @@ public class MainApplicationFrame extends JFrame
         catch (ClassNotFoundException | InstantiationException
                | IllegalAccessException | UnsupportedLookAndFeelException e)
         {
-            // just ignore
         }
     }
 }
