@@ -27,6 +27,17 @@ public class LogWindow extends JInternalFrame implements LogChangeListener , Sta
         getContentPane().add(panel);
         pack();
         updateLogContent();
+
+        /**
+         * слушатель событий окна
+         * при закрытии окна отписывается от логгера
+         */
+        this.addInternalFrameListener(new javax.swing.event.InternalFrameAdapter() {
+            @Override
+            public void internalFrameClosed(javax.swing.event.InternalFrameEvent e) {
+                logSource.unregisterListener(LogWindow.this);
+            }
+        });
     }
 
     private void updateLogContent()

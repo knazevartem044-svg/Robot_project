@@ -1,6 +1,8 @@
 package gui;
+
 import gui.state.StateSupport;
 import gui.state.StatefulComponent;
+
 import javax.swing.*;
 import java.awt.*;
 import java.beans.PropertyChangeEvent;
@@ -51,7 +53,7 @@ public class RobotInfoWindow extends JInternalFrame implements PropertyChangeLis
         String content = "x = " + x + "\n"
                 + "y = " + y + "\n"
                 + "robot angle = " + robotAngle + "\n"
-                + "angle to target = " + angleToTarget +  "\n";
+                + "angle to targe   t = " + angleToTarget + "\n";
         infoContent.setText(content);
     }
 
@@ -62,10 +64,16 @@ public class RobotInfoWindow extends JInternalFrame implements PropertyChangeLis
     public void propertyChange(PropertyChangeEvent evt) {
         updateInfoContent();
     }
+
     private final StateSupport stateSupport = new StateSupport();
-    @Override
-    public void saveState(Map<String, String> state) { stateSupport.save(this, state); }
 
     @Override
-    public void loadState(Map<String, String> state) { stateSupport.load(this, state); }
+    public void saveState(Map<String, String> state) {
+        stateSupport.save(this, state);
+    }
+
+    @Override
+    public void loadState(Map<String, String> state) {
+        stateSupport.load(this, state);
+    }
 }

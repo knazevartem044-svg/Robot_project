@@ -2,28 +2,27 @@ package log;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedList;
 
 /**
- * Что починить:
- * 1. Этот класс порождает утечку ресурсов (связанные слушатели оказываются
- * удерживаемыми в памяти)
- * 2. Этот класс хранит активные сообщения лога, но в такой реализации он 
- * их лишь накапливает. Надо же, чтобы количество сообщений в логе было ограничено 
- * величиной m_iQueueLength (т.е. реально нужна очередь сообщений 
- * ограниченного размера) 
+ * хранит ограниченную очередь логов и уведомляет подписчиков об изменениях
  */
 public class LogWindowSource
 {
+    /** Максимальное количество сообщений в логе */
     private int queueLength;
-    
-    private ArrayList<LogEntry> messages;
+    /**
+     * Хранилище сообщений
+     */
+    private final LinkedList<LogEntry> messages;
+    /** Список подписчиков на обновления лога. */
     private final ArrayList<LogChangeListener> listeners;
     private volatile LogChangeListener[] activeListeners;
     
     public LogWindowSource(int iQueueLength) 
     {
         queueLength = iQueueLength;
-        messages = new ArrayList<>(iQueueLength);
+        messages = new LinkedList<>();
         listeners = new ArrayList<>();
     }
     
@@ -47,8 +46,17 @@ public class LogWindowSource
     
     public void append(LogLevel logLevel, String strMessage)
     {
+        /**
+         * теперь удаляем первый элемент если вышли за границу
+         */
         LogEntry entry = new LogEntry(logLevel, strMessage);
-        messages.add(entry);
+        synchronized (messages) {
+            if (messages.size() >= queueLength) {
+                messages.removeFirst();
+            }
+            messages.addLast(entry);
+        }
+
         LogChangeListener [] activeListeners = this.activeListeners;
         if (activeListeners == null)
         {
@@ -66,24 +74,26 @@ public class LogWindowSource
             listener.onLogChanged();
         }
     }
-    
-    public int size()
-    {
-        return messages.size();
+
+    public int size() {
+        synchronized (messages) {
+            return messages.size();
+        }
     }
 
     public Iterable<LogEntry> range(int startFrom, int count)
-    {
-        if (startFrom < 0 || startFrom >= messages.size())
-        {
-            return Collections.emptyList();
-        }
-        int indexTo = Math.min(startFrom + count, messages.size());
-        return messages.subList(startFrom, indexTo);
+    {synchronized (messages) {
+            if (startFrom < 0 || startFrom >= messages.size())
+            {
+                return Collections.emptyList();
+            }
+            int indexTo = Math.min(startFrom + count, messages.size());
+            return new ArrayList<>(messages.subList(startFrom, indexTo));}
     }
 
-    public Iterable<LogEntry> all()
-    {
-        return messages;
+    public Iterable<LogEntry> all() {
+        synchronized (messages) {
+            return new ArrayList<>(messages);
+        }
     }
 }

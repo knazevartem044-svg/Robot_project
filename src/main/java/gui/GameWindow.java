@@ -1,6 +1,8 @@
 package gui;
+
 import gui.state.StateSupport;
 import gui.state.StatefulComponent;
+
 import java.util.Map;
 import javax.swing.*;
 import java.awt.*;
@@ -27,9 +29,14 @@ public class GameWindow extends JInternalFrame implements StatefulComponent {
     }
 
     private final StateSupport stateSupport = new StateSupport();
-    @Override
-    public void saveState(Map<String, String> state) { stateSupport.save(this, state); }
 
     @Override
-    public void loadState(Map<String, String> state) { stateSupport.load(this, state); }
+    public void saveState(Map<String, String> state) {
+        stateSupport.save(this, state);
+    }
+
+    @Override
+    public void loadState(Map<String, String> state) {
+        stateSupport.load(this, state);
+    }
 }

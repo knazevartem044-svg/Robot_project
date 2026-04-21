@@ -5,7 +5,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 
 /**
- * Хранит состояние робота и цели уведомляет подписчиков об изменениях.
+ * Хранит состояние робота и цели уведомляет подписчиков об изменениях
  */
 public class RobotModel {
     /**
@@ -17,6 +17,7 @@ public class RobotModel {
     private volatile int targetPositionX = 150;
     private volatile int targetPositionY = 100;
     /**
+     *Управляет списком подписчиков и рассылает им уведомления когда внутри модели что-то меняется
      *
      **/
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);

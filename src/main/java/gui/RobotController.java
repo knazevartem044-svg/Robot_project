@@ -35,6 +35,7 @@ public class RobotController {
             @Override
             public void mouseClicked(MouseEvent e) {
                 model.setTargetPosition(e.getX(), e.getY());
+                log.Logger.debug("Новая цель робота: X=" + e.getX() + ", Y=" + e.getY());
             }
         });
 

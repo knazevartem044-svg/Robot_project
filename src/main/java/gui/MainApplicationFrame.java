@@ -38,8 +38,16 @@ public class MainApplicationFrame extends JFrame
         LogWindow logWindow = createLogWindow();
         addWindow(logWindow);
 
-        GameWindow gameWindow = new GameWindow();
+        RobotModel robotModel = new RobotModel();
+
+
+        GameWindow gameWindow = new GameWindow(robotModel);
         addWindow(gameWindow);
+
+
+        RobotInfoWindow robotInfoWindow = new RobotInfoWindow(robotModel);
+        addWindow(robotInfoWindow);
+        gameWindow.startController();
 
         String homeDir = System.getProperty("user.home");
         File stateFile = new File(new File(homeDir, "knyazev"), "state.cfg");
@@ -47,6 +55,7 @@ public class MainApplicationFrame extends JFrame
         stateManager = new StateManager(stateFile);
         stateManager.register("log", logWindow);
         stateManager.register("model", gameWindow);
+        stateManager.register("info", robotInfoWindow);
         stateManager.loadAll();
 
         setJMenuBar(generateMenuBar());
@@ -95,6 +104,7 @@ public class MainApplicationFrame extends JFrame
         menuBar.add(createLookAndFeelMenu());
         menuBar.add(createTestMenu());
         return menuBar;
+
     }
 
     /**
@@ -154,6 +164,10 @@ public class MainApplicationFrame extends JFrame
         JMenuItem addLogMessageItem = new JMenuItem("Сообщение в лог", KeyEvent.VK_M);
         addLogMessageItem.addActionListener((event) -> Logger.debug("Новая строка"));
         testMenu.add(addLogMessageItem);
+
+        JMenuItem customLogItem = new JMenuItem("Свое сообщение");
+        customLogItem.addActionListener((event) -> Logger.debug("НОВОЕ СООБЩЕНИЕ"));
+        testMenu.add(customLogItem);
 
         return testMenu;
     }
