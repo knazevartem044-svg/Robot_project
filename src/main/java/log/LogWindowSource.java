@@ -1,8 +1,6 @@
 package log;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedList;
+import java.util.*;
 
 /**
  * хранит ограниченную очередь логов и уведомляет подписчиков об изменениях
@@ -16,14 +14,14 @@ public class LogWindowSource
      */
     private final LinkedList<LogEntry> messages;
     /** Список подписчиков на обновления лога. */
-    private final ArrayList<LogChangeListener> listeners;
+    private final Set<LogChangeListener> listeners;
     private volatile LogChangeListener[] activeListeners;
     
     public LogWindowSource(int iQueueLength) 
     {
         queueLength = iQueueLength;
         messages = new LinkedList<>();
-        listeners = new ArrayList<>();
+        listeners = Collections.newSetFromMap(new WeakHashMap<>());
     }
     
     public void registerListener(LogChangeListener listener)
